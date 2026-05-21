@@ -1,0 +1,4 @@
+site_name: markgraf-mkdocs demo
+plugins:
+  - search
+  - markgraf
