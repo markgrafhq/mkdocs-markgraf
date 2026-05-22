@@ -56,10 +56,17 @@ jobs:
           REF: ${{ github.ref_name }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          if [ "$PUBLISH_STATUS" = "success" ]; then COLOR=3066993; EMOJI=":white_check_mark:"; else COLOR=15158332; EMOJI=":x:"; fi
-          jq -n --arg title "$EMOJI $REPO $REF" \
-                --arg desc "build: $BUILD_STATUS / publish: $PUBLISH_STATUS" \
-                --arg url "$RUN_URL" \
-                --argjson color "$COLOR" \
-            '{embeds:[{title:$title,description:$desc,url:$url,color:$color}]}' \
-            | curl -sS -X POST -H 'Content-Type: application/json' -d @- "$WEBHOOK"
+          python3 <<'PY'
+          import json, os, urllib.request
+          ok = os.environ["PUBLISH_STATUS"] == "success"
+          body = json.dumps({"embeds":[{
+              "title": f"{'✅' if ok else '❌'} {os.environ['REPO']} {os.environ['REF']}",
+              "description": f"build: {os.environ['BUILD_STATUS']} / publish: {os.environ['PUBLISH_STATUS']}",
+              "url": os.environ["RUN_URL"],
+              "color": 3066993 if ok else 15158332,
+          }]}).encode()
+          req = urllib.request.Request(
+              os.environ["WEBHOOK"], data=body,
+              headers={"Content-Type": "application/json"})
+          urllib.request.urlopen(req).read()
+          PY
