@@ -121,3 +121,117 @@ frame v2 {
   gw -> ui "json"
 }
 ```
+
+## Cache write — the full story
+
+Seven frames: naive read → DB joins → cache → naive write → stale read → fix
+with cache invalidation → rerun that's now correct. Multi-line `|…|` token
+labels narrate each hop.
+
+```markgraf height=70svh
+seed 1
+
+frame "a simple read" {
+  +node client "Client"
+  +node api    "API"
+  +edge client api
+
+  client -> api |GET /user/42
+asks the API
+for one user record|
+}
+
+frame "DB joins the story" {
+  +node db "Database"
+  +edge api db
+
+  client -> api |GET /user/42
+arrives at the API|
+
+  api -> db |the API falls through
+to the source of truth|
+
+  api <- db |the row comes back,
+fresh from disk|
+
+  client <- api |200 OK
+correct, but every read
+costs a DB round trip|
+}
+
+frame "add a cache to speed up reads" {
+  +node cache "Cache"
+  +edge api cache
+}
+
+frame "naive write: forget the cache" {
+  client -> api |POST /user/42
+updates the user's row|
+
+  api -> db |INSERT
+writes to the DB,
+the source of truth|
+
+  client <- api |201 Created
+looks fine, but the cache
+still holds the OLD row|
+}
+
+frame "the catch: a stale read" {
+  client -> api |GET /user/42
+asks for the row we
+just overwrote|
+
+  api -> cache |LOOKUP user:42
+checks the cache,
+since reads should be fast|
+
+  api <- cache |HIT
+the cache returns
+the pre-write value|
+
+  client <- api |200 OK
+but the row is stale --
+the user sees old data|
+}
+
+frame "fix: invalidate on write" {
+  client -> api |POST /user/42
+updates the user's row|
+
+  api -> db |INSERT
+writes to the DB|
+
+  par {
+    api -> cache |DEL user:42
+drops the cache entry
+so the next read refills|
+
+    client <- api |201 Created
+responds in parallel,
+no waiting on the cache|
+  }
+}
+
+frame "rerun: same GET, now correct" {
+  client -> api |GET /user/42
+asks for the row again|
+
+  api -> cache |LOOKUP user:42
+checks the cache first|
+
+  api <- cache |MISS
+the cache was just
+invalidated|
+
+  api -> db |SELECT
+falls through to the DB|
+
+  api <- db |the fresh row
+comes back from disk|
+
+  client <- api |200 OK
+the user sees the
+correct, current row|
+}
+```
