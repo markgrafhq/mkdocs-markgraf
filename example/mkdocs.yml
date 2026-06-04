@@ -1,4 +1,6 @@
 site_name: markgraf-mkdocs demo
+site_url: https://markgrafhq.github.io/mkdocs-markgraf/
+use_directory_urls: true
 plugins:
   - search
   - markgraf
