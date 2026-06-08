@@ -28,7 +28,7 @@ Inside a page:
 ```markgraf
 seed 1
 
-frame v1 {
+keyframe v1 {
   +node client "Client"
   +node api "API"
   +node db "Database"
@@ -38,7 +38,7 @@ frame v1 {
   api -> db "SELECT"
 }
 
-frame v2 {
+keyframe v2 {
   +node cache "Cache"
   -edge api db
   +edge api cache

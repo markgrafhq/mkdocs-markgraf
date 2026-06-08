@@ -10,7 +10,7 @@ A read path before and after introducing a cache.
 ```markgraf
 seed 1
 
-frame v1 {
+keyframe v1 {
   +node client "Client"
   +node api "API"
   +node db "Database"
@@ -20,7 +20,7 @@ frame v1 {
   api -> db "SELECT"
 }
 
-frame v2 {
+keyframe v2 {
   +node cache "Cache"
   -edge api db
   +edge api cache
@@ -36,7 +36,7 @@ Larger graph; constrained to a shorter height with `height=320`.
 ```markgraf height=320
 seed 2
 
-frame ingest {
+keyframe ingest {
   +node src "Producer"
   +node q "Queue"
   +node w1 "Worker 1"
@@ -53,13 +53,13 @@ frame ingest {
   src -> q "batch"
 }
 
-frame work {
+keyframe work {
   q -> w1 "job 1"
   q -> w2 "job 2"
   q -> w3 "job 3"
 }
 
-frame drain {
+keyframe drain {
   w1 -> sink "done 1"
   w2 -> sink "done 2"
   w3 -> sink "done 3"
@@ -73,7 +73,7 @@ Same diagram clamped to a narrow column with `width=420`.
 ```markgraf width=420
 seed 3
 
-frame v1 {
+keyframe v1 {
   +node a "Auth"
   +node b "Billing"
   +node c "Catalog"
@@ -83,7 +83,7 @@ frame v1 {
   b -> c "price?"
 }
 
-frame v2 {
+keyframe v2 {
   c -> b "$9.99"
   b -> a "ok"
 }
@@ -96,7 +96,7 @@ Using `height=80svh` lets a deep graph use most of the viewport.
 ```markgraf height=80svh
 seed 4
 
-frame v1 {
+keyframe v1 {
   +node ui "UI"
   +node gw "Gateway"
   +node svc "Service"
@@ -112,7 +112,7 @@ frame v1 {
   gw -> svc "forward"
 }
 
-frame v2 {
+keyframe v2 {
   svc -> cache "miss"
   svc -> db "SELECT"
   db -> replica "stream"
@@ -131,7 +131,7 @@ labels narrate each hop.
 ```markgraf height=70svh
 seed 1
 
-frame "a simple read" {
+keyframe "a simple read" {
   +node client "Client"
   +node api    "API"
   +edge client api
@@ -141,7 +141,7 @@ asks the API
 for one user record|
 }
 
-frame "DB joins the story" {
+keyframe "DB joins the story" {
   +node db "Database"
   +edge api db
 
@@ -159,12 +159,12 @@ correct, but every read
 costs a DB round trip|
 }
 
-frame "add a cache to speed up reads" {
+keyframe "add a cache to speed up reads" {
   +node cache "Cache"
   +edge api cache
 }
 
-frame "naive write: forget the cache" {
+keyframe "naive write: forget the cache" {
   client -> api |POST /user/42
 updates the user's row|
 
@@ -177,7 +177,7 @@ looks fine, but the cache
 still holds the OLD row|
 }
 
-frame "the catch: a stale read" {
+keyframe "the catch: a stale read" {
   client -> api |GET /user/42
 asks for the row we
 just overwrote|
@@ -195,7 +195,7 @@ but the row is stale --
 the user sees old data|
 }
 
-frame "fix: invalidate on write" {
+keyframe "fix: invalidate on write" {
   client -> api |POST /user/42
 updates the user's row|
 
@@ -213,7 +213,7 @@ no waiting on the cache|
   }
 }
 
-frame "rerun: same GET, now correct" {
+keyframe "rerun: same GET, now correct" {
   client -> api |GET /user/42
 asks for the row again|
 
