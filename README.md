@@ -28,22 +28,22 @@ Inside a page:
 ```markgraf
 seed 1
 
-keyframe v1 {
-  +node client "Client"
-  +node api "API"
-  +node db "Database"
-  +edge client api
-  +edge api db
-  client -> api "GET /user/42"
-  api -> db "SELECT"
+scene v1 {
+  + client: Client
+  + api: API
+  + db: Database
+  + client -> api
+  + api -> db
+  client ~> api: GET /user/42
+  api ~> db: SELECT
 }
 
-keyframe v2 {
-  +node cache "Cache"
-  -edge api db
-  +edge api cache
-  client -> api "GET /user/42"
-  api -> cache "HIT"
+scene v2 {
+  + cache: Cache
+  - api -> db
+  + api -> cache
+  client ~> api: GET /user/42
+  api ~> cache: HIT
 }
 ```
 ````
