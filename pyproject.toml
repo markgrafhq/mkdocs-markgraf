@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mkdocs-markgraf"
-version = "0.0.31"
+version = "0.0.41"
 description = "MkDocs plugin that renders markgraf animations using the Canvas2D embed bundle."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -40,4 +40,4 @@ markgraf = "mkdocs_markgraf.plugin:MarkgrafPlugin"
 where = ["src"]
 
 [tool.setuptools.package-data]
-mkdocs_markgraf = ["assets/*.js", "assets/*.css"]
+mkdocs_markgraf = ["assets/*.js", "assets/*.css", "assets/*-LICENSE.txt"]
